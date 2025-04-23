@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode API Tester</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 0; }
+        .container { max-width: 400px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h2 { text-align: center; }
+        input[type="file"] { margin-bottom: 15px; }
+        button { width: 100%; padding: 10px; background: #007bff; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; background: #e9ecef; padding: 15px; border-radius: 6px; }
+        .error { color: #c00; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Barcode API Tester</h2>
+        <form id="barcodeForm">
+            <input type="file" id="imageInput" name="image" accept="image/*" required />
+            <button type="submit">Upload & Decode</button>
+        </form>
+        <div id="result" class="result" style="display:none;"></div>
+    </div>
+    <script>
+        document.getElementById('barcodeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('imageInput');
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'none';
+            resultDiv.innerHTML = '';
+            if (!fileInput.files.length) return;
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
+            try {
+                const response = await fetch('/api/barcode', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                resultDiv.style.display = 'block';
+                if (data.barcode) {
+                    resultDiv.innerHTML = `<b>Barcode:</b> ${data.barcode}<br>` +
+                        (data.product ? `<b>Product Name:</b> ${data.product.name || 'N/A'}<br><b>Brands:</b> ${data.product.brands || 'N/A'}<br><b>Categories:</b> ${data.product.categories || 'N/A'}<br><b>Ingredients:</b> ${data.product.ingredients || 'N/A'}<br><b>Packaging:</b> ${data.product.packaging || 'N/A'}<br><img src="${data.product.image_url || ''}" alt="Product Image" style="max-width:100%;margin-top:10px;">` : '<span class="error">Product not found.</span>') +
+                        (data.message ? `<br><i>${data.message}</i>` : '');
+                } else {
+                    resultDiv.innerHTML = `<span class="error">${data.message || 'No barcode detected.'}</span>`;
+                }
+            } catch (err) {
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = '<span class="error">Error contacting server.</span>';
+            }
+        });
+    </script>
+</body>
+</html>

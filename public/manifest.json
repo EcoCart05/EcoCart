@@ -1,0 +1,9 @@
+{
+  "name": "SGU Hackathon App",
+  "short_name": "SGUApp",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "description": "Your app description",
+  "icons": []
+}
